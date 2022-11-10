@@ -18,18 +18,26 @@ async function run() {
   try {
     const menuCollection = client.db("homeFlavorFood").collection("menus");
 
+    const reviewCollection = client.db("homeFlavorFood").collection("reviews");
+
     app.get("/menus", async (req, res) => {
       const query = {};
       const cursor = menuCollection.find(query);
       const menus = await cursor.toArray();
       res.send(menus);
+    });
 
-      app.get("/menus/:id", async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: ObjectId(id) };
-        const menu = await menuCollection.findOne(query);
-        res.send(menu);
-      });
+    app.get("/menus/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const menu = await menuCollection.findOne(query);
+      res.send(menu);
+    });
+
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
     });
   } finally {
   }
