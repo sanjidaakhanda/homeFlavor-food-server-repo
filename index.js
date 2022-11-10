@@ -2,13 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 app.use(cors());
 app.use(express.json());
-
-console.log(process.env.DB_USER);
-console.log(process.env.DB_PASSWORD);
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.c1bs29r.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -17,12 +14,27 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-client.connect((err) => {
-  const collection = client.db("test").collection("devices");
-  // perform actions on the collection object
-  client.close();
-});
+async function run() {
+  try {
+    const menuCollection = client.db("homeFlavorFood").collection("menus");
 
+    app.get("/menus", async (req, res) => {
+      const query = {};
+      const cursor = menuCollection.find(query);
+      const menus = await cursor.toArray();
+      res.send(menus);
+
+      app.get("/menus/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const menu = await menuCollection.findOne(query);
+        res.send(menu);
+      });
+    });
+  } finally {
+  }
+}
+run().catch((error) => console.error(error));
 app.get("/", (req, res) => {
   res.send("homeFood server is running");
 });
